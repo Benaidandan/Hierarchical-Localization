@@ -238,6 +238,7 @@ def main(
     image_list: Optional[Union[Path, List[str]]] = None,
     feature_path: Optional[Path] = None,
     overwrite: bool = False,
+    model: torch.nn.Module = None, 
 ) -> Path:
     logger.info(
         "Extracting local features with configuration:" f"\n{pprint.pformat(conf)}"
@@ -256,8 +257,9 @@ def main(
         return feature_path
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    Model = dynamic_load(extractors, conf["model"]["name"])
-    model = Model(conf["model"]).eval().to(device)
+    if model is None:
+        Model = dynamic_load(extractors, conf["model"]["name"])
+        model = Model(conf["model"]).eval().to(device)
 
     loader = torch.utils.data.DataLoader(
         dataset, num_workers=1, shuffle=False, pin_memory=True
